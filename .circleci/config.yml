@@ -1,0 +1,1653 @@
+version: 2.1
+
+jobs:
+  auditor_succes-only:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: alder stick
+          command: |
+            mkdir -p /tmp/share
+            set +o pipefail 2>/dev/null; seq 1 574888 | md5sum > /tmp/share/passoff.state; true
+            stat -c '%s %n' /tmp/share/passoff.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - passoff.state
+  succes-only:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/passoff.state 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  tester_Deploy_Staging4:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: not yet
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%s\n" one two three | awk '{print toupper($1)}'; true ; } > /tmp/share/big_phase_output_v3.txt
+            stat -c '%s %n' /tmp/share/big_phase_output_v3.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - big_phase_output_v3.txt
+  Deploy_Staging4:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/big_phase_output_v3.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  cache_chen-verify:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: stick weld
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "red\nblue\ngreen\nblue\nred\n" | awk '!seen[$0]++'; true ; } > /tmp/share/.lock
+            stat -c '%s %n' /tmp/share/.lock
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - .lock
+  chen-verify:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  Delta_VERIFY_DEV:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: whatever bro
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cksum /etc/hostname; true ; } > /tmp/share/checkpoint-C.pkl
+            stat -c '%s %n' /tmp/share/checkpoint-C.pkl
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - checkpoint-C.pkl
+  VERIFY_DEV:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/checkpoint-C.pkl 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  staging_spin-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: roll with it
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=15;i++){s=""; for(j=1;j<=i;j++)s=s"X"; print s}}' | wc -l; true ; } > /tmp/share/FINAL.txt
+            stat -c '%s %n' /tmp/share/FINAL.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - FINAL.txt
+  spin-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  verify_validate-staging-artifact-bundle:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: scent trail
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%o\n" $((RANDOM)); true ; } > /tmp/share/timings.csv
+            stat -c '%s %n' /tmp/share/timings.csv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - timings.csv
+  validate-staging-artifact-bundle:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/timings.csv 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  kick_rocket:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: towel pat
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="programming"; a[1]; for(i=1;i<=length(s);i++)a[substr(s,i,1)]++; for(k in a)print k":"a[k]}' | sort; true ; } > /tmp/share/ckpt-main.pkl
+            stat -c '%s %n' /tmp/share/ckpt-main.pkl
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - ckpt-main.pkl
+  rocket:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/ckpt-main.pkl 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  prep_fix-router-bug:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: rerun
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 100 1 2>/dev/null | head -3 || seq 1 100 | sort -nr | head -3; true ; } > /tmp/share/stash.dat
+            stat -c '%s %n' /tmp/share/stash.dat
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stash.dat
+  fix-router-bug:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/stash.dat 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  audit_q2-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: cast off
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a[1]=10; a[2]=20; a[3]=30; for(k in a) s+=a[k]; print s}'; true ; } > /tmp/share/40.blob
+            stat -c '%s %n' /tmp/share/40.blob
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 40.blob
+  q2-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  reload_qa-x:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: knock around
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 1000 | awk 'NR%3==0' | wc -l; true ; } > /tmp/share/73.bin
+            stat -c '%s %n' /tmp/share/73.bin
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 73.bin
+  qa-x:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  run_rm-router:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: MOAR
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "127.0.0.1:8080" | awk -F: '{print $2}'; true ; } > /tmp/share/event.txt
+            stat -c '%s %n' /tmp/share/event.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - event.txt
+  rm-router:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/event.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  C_feb22-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: on deck
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "data" | b2sum 2>/dev/null | head -c 20 || echo "data" | md5sum | head -c 20; true ; } > /tmp/share/checkpoint-E.pickle
+            stat -c '%s %n' /tmp/share/checkpoint-E.pickle
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - checkpoint-E.pickle
+  feb22-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  A_tb-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: WHY
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo 'a:b:c:d:e' | awk -F: '{print NF}'; true ; } > /tmp/share/event.log
+            stat -c '%s %n' /tmp/share/event.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - event.log
+  tb-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/event.log 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  vendor_add-router-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: vivace
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s=""; while(length(s)<80) s=s"q"; print length(s)}'; true ; } > /tmp/share/step-18.out
+            stat -c '%s %n' /tmp/share/step-18.out
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - step-18.out
+  add-router-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  hydrate_p-01:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: leg raise
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "trim me   " | awk '{sub(/[[:space:]]+$/,""); print length($0)}'; true ; } > /tmp/share/checkpoint-B.state
+            stat -c '%s %n' /tmp/share/checkpoint-B.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - checkpoint-B.state
+  p-01:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/checkpoint-B.state 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  run_artifacts:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: drip drop
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; cat /proc/version 2>/dev/null | head -c 80; true ; } > /tmp/share/.ready
+            stat -c '%s %n' /tmp/share/.ready
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - .ready
+  artifacts:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  staging_cf-alt:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: knock
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "the rain in spain" | tr -s ' ' | wc -c; true ; } > /tmp/share/pt-B.state
+            stat -c '%s %n' /tmp/share/pt-B.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - pt-B.state
+  cf-alt:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/pt-B.state 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  stepA_q4-canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: arpeggio sweep
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; tf=$(mktemp) && echo hi > "$tf" && stat -c %s "$tf" 2>/dev/null && rm "$tf"; true ; } > /tmp/share/metrics.tsv
+            stat -c '%s %n' /tmp/share/metrics.tsv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - metrics.tsv
+  q4-canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  reset_v1-canary4:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: power snatch
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; date -d "@1700000000" 2>/dev/null +%Y || date +%Y; true ; } > /tmp/share/trace.txt
+            stat -c '%s %n' /tmp/share/trace.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - trace.txt
+  v1-canary4:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/trace.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  staging_tweak-login-leak:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: tornado alley
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; test -d /tmp && echo yes || echo no; true ; } > /tmp/share/stats.tsv
+            stat -c '%s %n' /tmp/share/stats.tsv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stats.tsv
+  tweak-login-leak:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/stats.tsv 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  cache_q1-smoke:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: warm boot
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s=sprintf("[%5s]","hi"); print s}'; true ; } > /tmp/share/208.out
+            stat -c '%s %n' /tmp/share/208.out
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 208.out
+  q1-smoke:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  g1_v5-beta2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: plateau sit
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk 'END{print NR*(NR+1)/2}'; true ; } > /tmp/share/step-3.log
+            stat -c '%s %n' /tmp/share/step-3.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - step-3.log
+  v5-beta2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/step-3.log 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  validate_mike:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: let go
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 279151 | sha1sum; true ; } > /tmp/share/step-10.log
+            stat -c '%s %n' /tmp/share/step-10.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - step-10.log
+  mike:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  staging_check-production-test-matrix:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: pincer
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; head -5 /etc/passwd | awk -F: '{print length($1), $1}' | sort -n | tail -1; true ; } > /tmp/share/2024-01-24.data
+            stat -c '%s %n' /tmp/share/2024-01-24.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 2024-01-24.data
+  check-production-test-matrix:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  provision_wip-router:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: loop till green
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo $HOSTNAME; true ; } > /tmp/share/11.log
+            stat -c '%s %n' /tmp/share/11.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 11.log
+  wip-router:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/11.log 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  stepB_DEV_STAGE_1:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: press over
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 20 | awk 'BEGIN{OFS="-"}{if(NR%4==1)printf "%s",$0; else if(NR%4==0)print OFS $0; else printf OFS "%s",$0}' | head -3; true ; } > /tmp/share/READY.txt
+            stat -c '%s %n' /tmp/share/READY.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - READY.txt
+  DEV_STAGE_1:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/READY.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  reload_assemble-production-artifact-bundle:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: dropped stitch
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; sed -e 's/[^:]*:[^:]*/REDACTED/' /etc/passwd | head -3; true ; } > /tmp/share/523.data
+            stat -c '%s %n' /tmp/share/523.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 523.data
+  assemble-production-artifact-bundle:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  red_Deploy_Staging2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: curlicue
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{OFS=","; print 1,2,3; print "a","b","c"}'; true ; } > /tmp/share/25.data
+            stat -c '%s %n' /tmp/share/25.data
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 25.data
+  Deploy_Staging2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  route_sep26-release:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: go
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "The Quick Brown Fox" | awk '{for(i=1;i<=NF;i++)printf "%s", substr($i,1,1); print ""}'; true ; } > /tmp/share/DONE.txt
+            stat -c '%s %n' /tmp/share/DONE.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - DONE.txt
+  sep26-release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+  package_hyperion-alpha:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: cuban rotation
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a="apple"; b="pie"; c=a" and "b; print c}'; true ; } > /tmp/share/421.txt
+            stat -c '%s %n' /tmp/share/421.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 421.txt
+  hyperion-alpha:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: Pull from workspace
+          command: |
+            { od -An -c /tmp/share/FINAL.txt 2>/dev/null | head -3; echo "od ok" ; } || true
+      - run:
+          name: Fetch main branch
+          command: git clone --depth 2 --quiet --single-branch --no-tags https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: tar --extract --gzip --file=collection.tgz
+      - run:
+          name: Collect artifacts
+          command: /bin/sleep 30
+      - run:
+          no_output_timeout: 105m
+          command: ./bootstrap
+
+  prebuild_fix-router-bug_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: mdf sheet
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<16;i++)printf "%X", i; print ""}'; true ; } > /tmp/share/stash.dat
+            stat -c '%s %n' /tmp/share/stash.dat
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stash.dat
+  syncer_tb-v2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: midnight ci
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo $(($(date +%u) + 7)); true ; } > /tmp/share/event.log
+            stat -c '%s %n' /tmp/share/event.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - event.log
+  fixture_validate-staging-artifact-bundle_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: why flaky
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; mkdir -p /tmp/_sl && echo t > /tmp/_sl/t && ln -s /tmp/_sl/t /tmp/_sl/l && readlink /tmp/_sl/l && rm -rf /tmp/_sl; true ; } > /tmp/share/timings.csv
+            stat -c '%s %n' /tmp/share/timings.csv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - timings.csv
+  C_VERIFY_DEV_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: cha cha quick
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; tf=$(mktemp) && head -c 1024 /dev/urandom > "$tf" && sha1sum "$tf" | cut -d' ' -f1 && rm "$tf"; true ; } > /tmp/share/checkpoint-C.pkl
+            stat -c '%s %n' /tmp/share/checkpoint-C.pkl
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - checkpoint-C.pkl
+  stage_rm-router_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: hand sand
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a=1;b=1;for(i=0;i<30;i++){c=a+b;a=b;b=c}print c}'; true ; } > /tmp/share/event.txt
+            stat -c '%s %n' /tmp/share/event.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - event.txt
+  resync_DEV_STAGE_1_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: front end
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%s\n" one two three | awk '{print toupper($1)}'; true ; } > /tmp/share/READY.txt
+            stat -c '%s %n' /tmp/share/READY.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - READY.txt
+  phase_Deploy_Staging4_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: nth retry
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 2 50 | awk '{isp=1; for(j=2;j*j<=$1;j++)if($1%j==0){isp=0;break}; if(isp)print $1}' | tail -3; true ; } > /tmp/share/big_phase_output_v3.txt
+            stat -c '%s %n' /tmp/share/big_phase_output_v3.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - big_phase_output_v3.txt
+  package_succes-only_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: diminution
+          command: |
+            mkdir -p /tmp/share
+            set +o pipefail 2>/dev/null; seq 1 574888 | md5sum > /tmp/share/passoff.state; true
+            stat -c '%s %n' /tmp/share/passoff.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - passoff.state
+  wire_tweak-login-leak_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: rinse
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; head -c 1024 /dev/urandom | tar -c - 2>/dev/null | wc -c; true ; } > /tmp/share/stats.tsv
+            stat -c '%s %n' /tmp/share/stats.tsv
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - stats.tsv
+  warmup_p-01_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: mountain climber
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; seq 1 589460 | paste - - - - | wc -l; true ; } > /tmp/share/checkpoint-B.state
+            stat -c '%s %n' /tmp/share/checkpoint-B.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - checkpoint-B.state
+  tap_wip-router_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: mostly green
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; find /etc -maxdepth 1 -type f 2>/dev/null | wc -l; true ; } > /tmp/share/11.log
+            stat -c '%s %n' /tmp/share/11.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - 11.log
+  db_rocket_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: maltese
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; head -5 /etc/passwd | awk -F: '{print length($1), $1}' | sort -n | tail -1; true ; } > /tmp/share/ckpt-main.pkl
+            stat -c '%s %n' /tmp/share/ckpt-main.pkl
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - ckpt-main.pkl
+  cacher_cf-alt_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: sidestep
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; printf "%s\n" one two three four five | shuf 2>/dev/null | head -1 || printf "%s\n" one two three four five | awk 'NR==2'; true ; } > /tmp/share/pt-B.state
+            stat -c '%s %n' /tmp/share/pt-B.state
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - pt-B.state
+  preflight_v1-canary4_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: rollback never
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{PI=3.14159265; print PI, PI*2, PI*PI}'; true ; } > /tmp/share/trace.txt
+            stat -c '%s %n' /tmp/share/trace.txt
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - trace.txt
+  syncer_v5-beta2_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/share
+      - run:
+          name: interlude
+          command: |
+            mkdir -p /tmp/share
+            { set +o pipefail 2>/dev/null; echo "payload=42" | awk -F= '$1=="payload"{print $2+1}'; true ; } > /tmp/share/step-3.log
+            stat -c '%s %n' /tmp/share/step-3.log
+      - persist_to_workspace:
+          root: /tmp/share
+          paths:
+            - step-3.log
+workflows:
+  default:
+    jobs:
+      - staging_spin-up
+      - run_artifacts
+      - cache_chen-verify
+      - spin-up:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - artifacts:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - chen-verify:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - q1-smoke:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - add-router-v2:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - feb22-ship:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - check-production-test-matrix:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - sep26-release:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - q2-ship:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - q4-canary:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - assemble-production-artifact-bundle:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - qa-x:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - hyperion-alpha:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - mike:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - Deploy_Staging2:
+          requires:
+            - staging_spin-up
+            - run_artifacts
+            - cache_chen-verify
+      - prep_fix-router-bug
+      - prebuild_fix-router-bug_2:
+          requires:
+            - prep_fix-router-bug
+      - fix-router-bug:
+          requires:
+            - prebuild_fix-router-bug_2
+      - A_tb-v2:
+          requires:
+            - prebuild_fix-router-bug_2
+      - syncer_tb-v2_2:
+          requires:
+            - A_tb-v2
+      - tb-v2:
+          requires:
+            - syncer_tb-v2_2
+      - verify_validate-staging-artifact-bundle:
+          requires:
+            - syncer_tb-v2_2
+      - fixture_validate-staging-artifact-bundle_2:
+          requires:
+            - verify_validate-staging-artifact-bundle
+      - validate-staging-artifact-bundle:
+          requires:
+            - fixture_validate-staging-artifact-bundle_2
+      - Delta_VERIFY_DEV:
+          requires:
+            - fixture_validate-staging-artifact-bundle_2
+      - C_VERIFY_DEV_2:
+          requires:
+            - Delta_VERIFY_DEV
+      - VERIFY_DEV:
+          requires:
+            - C_VERIFY_DEV_2
+      - run_rm-router:
+          requires:
+            - C_VERIFY_DEV_2
+      - stage_rm-router_2:
+          requires:
+            - run_rm-router
+      - rm-router:
+          requires:
+            - stage_rm-router_2
+      - stepB_DEV_STAGE_1:
+          requires:
+            - stage_rm-router_2
+      - resync_DEV_STAGE_1_2:
+          requires:
+            - stepB_DEV_STAGE_1
+      - DEV_STAGE_1:
+          requires:
+            - resync_DEV_STAGE_1_2
+      - tester_Deploy_Staging4:
+          requires:
+            - resync_DEV_STAGE_1_2
+      - phase_Deploy_Staging4_2:
+          requires:
+            - tester_Deploy_Staging4
+      - Deploy_Staging4:
+          requires:
+            - phase_Deploy_Staging4_2
+      - auditor_succes-only:
+          requires:
+            - phase_Deploy_Staging4_2
+      - package_succes-only_2:
+          requires:
+            - auditor_succes-only
+      - succes-only:
+          requires:
+            - package_succes-only_2
+      - staging_tweak-login-leak:
+          requires:
+            - package_succes-only_2
+      - wire_tweak-login-leak_2:
+          requires:
+            - staging_tweak-login-leak
+      - tweak-login-leak:
+          requires:
+            - wire_tweak-login-leak_2
+      - hydrate_p-01:
+          requires:
+            - wire_tweak-login-leak_2
+      - warmup_p-01_2:
+          requires:
+            - hydrate_p-01
+      - p-01:
+          requires:
+            - warmup_p-01_2
+      - provision_wip-router:
+          requires:
+            - warmup_p-01_2
+      - tap_wip-router_2:
+          requires:
+            - provision_wip-router
+      - wip-router:
+          requires:
+            - tap_wip-router_2
+      - kick_rocket:
+          requires:
+            - tap_wip-router_2
+      - db_rocket_2:
+          requires:
+            - kick_rocket
+      - rocket:
+          requires:
+            - db_rocket_2
+      - staging_cf-alt:
+          requires:
+            - db_rocket_2
+      - cacher_cf-alt_2:
+          requires:
+            - staging_cf-alt
+      - cf-alt:
+          requires:
+            - cacher_cf-alt_2
+      - reset_v1-canary4:
+          requires:
+            - cacher_cf-alt_2
+      - preflight_v1-canary4_2:
+          requires:
+            - reset_v1-canary4
+      - v1-canary4:
+          requires:
+            - preflight_v1-canary4_2
+      - g1_v5-beta2:
+          requires:
+            - preflight_v1-canary4_2
+      - syncer_v5-beta2_2:
+          requires:
+            - g1_v5-beta2
+      - v5-beta2:
+          requires:
+            - syncer_v5-beta2_2
